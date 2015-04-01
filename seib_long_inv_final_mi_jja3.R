@@ -183,7 +183,20 @@ if (switches[5, 2] == 1) {
     
                 names(sei.b.mi)[3:29] <- paste(rep("q", 27), 1:27, sep="")
     
-    ##multiple imputation begins here
+      ##Amelia II multiple imputation of missing data, appears to converge after the 2nd chain?
+    
+                    ##Prediction of missing data
+              a.out <- amelia(sei.b.mi, m = 5, p2s = 2, idvars = c("contrivid", "time")) 
+    
+                    ##Check convergence, produce a missmap, check densities of variables -- So many variables make graphs maybe not so useful
+              disperse(a.out, dims = 1, m = 5)
+              missmap(a.out)
+              plot(a.out) ##mean imputations appear to fall within our bounds (1-5) for each question
+                    
+                    ##save imputations as separate .csv files to visually inspect, some values are over 5 -- does this matter?
+                  write.amelia(obj=a.out, file.stem = "SEI_B_mi")
+  
+    ##old way of multiple imputation begins here
   
                   info <- mi.info(sei.b.mi)  ## creates an info matrix for the mi
                   info
