@@ -184,7 +184,9 @@ if (switches[5, 2] == 1) {
                 names(sei.b.mi)[3:29] <- paste(rep("q", 27), 1:27, sep="")
     
       ##Amelia II multiple imputation of missing data, appears to converge after the 2nd chain?
-    
+  
+                    ##set.seed to replicate results
+              set.seed(4612)  
                     ##Prediction of missing data
               a.out <- amelia(sei.b.mi, m = 5, p2s = 2, idvars = c("contrivid", "time")) 
     
@@ -198,67 +200,67 @@ if (switches[5, 2] == 1) {
   
     ##old way of multiple imputation begins here
   
-                  info <- mi.info(sei.b.mi)  ## creates an info matrix for the mi
-                  info
-    
-                  # mark contrivid as ID
-                  info <- update(info, "is.ID", list("contrivid" = TRUE))
-                  # check boolean that it worked - should now be TRUE
-                  info$is.ID
-    
+#                  info <- mi.info(sei.b.mi)  ## creates an info matrix for the mi
+#                  info
+#    
+#                  # mark contrivid as ID
+#                  info <- update(info, "is.ID", list("contrivid" = TRUE))
+#                  # check boolean that it worked - should now be TRUE
+#                  info$is.ID
+#    
                     # missingness map
-                    missing.pattern.plot(sei.b.mi, y.order = TRUE, x.order = TRUE, gray.scale = TRUE)
-    
-
-
-    
-                  sei.b.mimp <- mi(sei.b.mi, info=info, n.imp = 5, n.iter = 30,          ##multiple imputation, performing iterations for 30 minutes
-                                   R.hat = 1.1, max.minutes = 30, rand.imp.method = "bootstrap",
-                                   run.past.convergence = FALSE,
-                                   seed = 123456789, check.coef.convergence = TRUE,
-                                   add.noise = FALSE)
-                  pdf("plots.pdf")
-                  plot(sei.b.mimp)  ##visual analysis (I wasn't sure how to interpret these plots, they are different than the pdf)           
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off()
-                      dev.off() 
-                      dev.off()
-    
-                  # retrieve imputed datasets
-                  for (i in 1:5) {
-                  assign(paste("mi", i, ".dat", sep = ""), mi.data.frame(sei.b.mimp, m = 1))
-                  }
-    
-              ##  sei.b.mi2 <- sei.b.mi[complete.cases(sei.b.mi),] # remove incomplete cases
-    
-    
-    
-          sei.b.mi[, names(sei.b.mi)[3:29]] <- 
-                  lapply( sei.b.mi[, names(sei.b.mi)[3:29]], ordered)
+#                    missing.pattern.plot(sei.b.mi, y.order = TRUE, x.order = TRUE, gray.scale = TRUE)
+#    
+#
+#
+#    
+#                  sei.b.mimp <- mi(sei.b.mi, info=info, n.imp = 5, n.iter = 30,          ##multiple imputation, performing iterations for 30 minutes
+#                                   R.hat = 1.1, max.minutes = 30, rand.imp.method = "bootstrap",
+#                                   run.past.convergence = FALSE,
+#                                   seed = 123456789, check.coef.convergence = TRUE,
+#                                   add.noise = FALSE)
+#                  pdf("plots.pdf")
+#                  plot(sei.b.mimp)  ##visual analysis (I wasn't sure how to interpret these plots, they are different than the pdf)           
+#                      dev.off()
+#                      dev.off()
+#                      dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off()
+#                       dev.off() 
+#                       dev.off()
+#     
+#                   # retrieve imputed datasets
+#                   for (i in 1:5) {
+#                   assign(paste("mi", i, ".dat", sep = ""), mi.data.frame(sei.b.mimp, m = 1))
+#                   }
+#     
+#               ##  sei.b.mi2 <- sei.b.mi[complete.cases(sei.b.mi),] # remove incomplete cases
+#     
+#     
+#     
+#           sei.b.mi[, names(sei.b.mi)[3:29]] <- 
+#                   lapply( sei.b.mi[, names(sei.b.mi)[3:29]], ordered)
     
  
 
@@ -269,9 +271,17 @@ if (switches[5, 2] == 1) {
                           fsl  =~ q15 + q1 + q8 + q22 '
     
 
+            ## calls in each imputation csv and places them into a list
+        sei.b.amelia = list()               
+        for (i in 1:5) {
+          oname <- paste("sei.b.amelia", i, sep="")
+         sei.b.amelia[[i]] <- assign(oname, read.csv(paste("SEI_B_mi",i,".csv", sep = ""), header=T))
+        }
+          
+
           x <- 1     ##initial loop counter
         while (x != 6) {        ##loop to do invariance analysis on each imputation
-              inv.fit <- measurementInvariance(seib.model, data = mi.data.frame(sei.b.mimp, m = x), ## returns the data frame at each imputation 1-5
+              inv.fit <- measurementInvariance(seib.model, data = sei.b.amelia[[x]], ## returns the data frame at each imputation 1-5
                                      group = "time")
               x <- x + 1  ##loop incrementation
         }
